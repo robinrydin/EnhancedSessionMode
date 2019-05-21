@@ -21,19 +21,30 @@ setenforce Permissive
 sed -i 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config
 
 # Recompile XRDP with Hyper-V enabled
-yum install -y epel-release rpm-build rpmdevtools yum-utils
-yum groupinstall -y "Development tools" "Server Platform Development" "Additional Development" "Compatibility libraries"
-rpmdev-setuptree
-yumdownloader --source xrdp
-rpm -ivh xrdp*.src.rpm
-yum-builddep -y xrdp
-sed -i '/^%configure/ s/$/ --enable-vsock/' ~/rpmbuild/SPECS/xrdp.spec
-rpmbuild -bb ~/rpmbuild/SPECS/xrdp.spec
+yum install -y git openssl-devel pam-devel libX11-devel libXfixes-devel libXrandr-devel gcc clang make automake libtool pkgconfig
+
+yum install -y nasm --enablerepo=codeready-builder-for-rhel-8-x86_64-rpms
+yum install -y tigervnc-server xorg* coreutils wget
+
+git clone --recursive https://github.com/neutrinolabs/xrdp
+
+cd xrdp
+./bootstrap
+./configure --enable-vsock
+make
+make install
+#yum groupinstall -y "Development tools" "Server Platform Development" "Additional Development" "Compatibility libraries"
+#rpmdev-setuptree
+#yumdownloader --source xrdp
+#rpm -ivh xrdp*.src.rpm
+#yum-builddep -y xrdp
+#sed -i '/^%configure/ s/$/ --enable-vsock/' ~/rpmbuild/SPECS/xrdp.spec
+#rpmbuild -bb ~/rpmbuild/SPECS/xrdp.spec
 
 # Install XRDP with Hyper-V enabled
-rm -f ~/rpmbuild/RPMS/x86_64/xrdp-d*
-rm -f ~/rpmbuild/RPMS/x86_64/xrdp-s*
-yum install -y ~/rpmbuild/RPMS/x86_64/xrdp*.x86_64.rpm
+#rm -f ~/rpmbuild/RPMS/x86_64/xrdp-d*
+#rm -f ~/rpmbuild/RPMS/x86_64/xrdp-s*
+#yum install -y ~/rpmbuild/RPMS/x86_64/xrdp*.x86_64.rpm
 systemctl enable xrdp
 systemctl start xrdp
 
